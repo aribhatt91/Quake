@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 //                    }
 //                }
 //        );
+        ((App) getApplication()).getComponent().inject(this);
 
 
 
