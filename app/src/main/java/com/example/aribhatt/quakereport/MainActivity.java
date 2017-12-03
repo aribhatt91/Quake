@@ -3,11 +3,16 @@ package com.example.aribhatt.quakereport;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
+import com.example.aribhatt.quakereport.adapters.ListAdapter;
 import com.example.aribhatt.quakereport.model.Quake;
 import com.example.aribhatt.quakereport.model.Response;
 import com.example.aribhatt.quakereport.service.RetrofitHelper;
+import com.example.aribhatt.quakereport.view.ListItemDecorator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,36 +26,25 @@ import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
-    List<String> list = Arrays.asList(new String[]{"Hello", "World", "How", "are", "you?"});
+    RecyclerView list;
+    List<Quake> items;
+    ListAdapter adapter;
 
     DisposableObserver<String> disposableObserver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        Observable<String> observable = Observable.fromIterable(list);
-//
-//        disposableObserver = observable
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribeWith(new DisposableObserver<String>() {
-//                    @Override
-//                    public void onNext(@NonNull String s) {
-//                        Log.d("RXOBSERVER", s);
-//                    }
-//
-//                    @Override
-//                    public void onError(@NonNull Throwable e) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//
-//                    }
-//                }
-//        );
+
         ((App) getApplication()).getComponent().inject(this);
+        items = new ArrayList<Quake>();
+        list = (RecyclerView) findViewById(R.id.list);
+        adapter = new ListAdapter(MainActivity.this, items);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(MainActivity.this);
+        list.addItemDecoration(new ListItemDecorator(1, 20, true));
+        list.setItemAnimator(new DefaultItemAnimator());
+        list.setLayoutManager(mLayoutManager);
+        list.setAdapter(adapter);
 
 
 
@@ -66,7 +60,11 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onNext(@NonNull Response response) {
-                Log.d("QUAKE", response.getFeatures().toString());
+                Log.d("QUAKE", response.toString());
+                items.clear();
+                items.addAll(response.getFeatures());
+                //adapter.notifyDataSetChanged();
+
             }
 
             @Override
@@ -78,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete() {
                 Log.d("REQ", "Request complete");
-
+                adapter.notifyDataSetChanged();
             }
         });
     }

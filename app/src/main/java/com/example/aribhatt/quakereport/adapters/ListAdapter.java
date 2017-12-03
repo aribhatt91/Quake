@@ -1,13 +1,19 @@
 package com.example.aribhatt.quakereport.adapters;
 
+import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.amulyakhare.textdrawable.TextDrawable;
 import com.example.aribhatt.quakereport.R;
+import com.example.aribhatt.quakereport.model.Properties;
 import com.example.aribhatt.quakereport.model.Quake;
+import com.example.aribhatt.quakereport.utils.Util;
 
 import java.util.List;
 
@@ -15,21 +21,47 @@ import java.util.List;
  * Created by aribhatt on 03/11/17.
  */
 
-public class ListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements View.OnClickListener, View.OnLongClickListener {
-
+public class ListAdapter extends RecyclerView.Adapter<ListAdapter.QuakeViewHolder> implements View.OnClickListener, View.OnLongClickListener {
+    List<Quake> quakeList;
+    Context mContext;
     interface Callback {
         void onItemClicked(int index, boolean longClick);
 
         void onIconClicked(int index);
     }
 
-    List<Quake> quakeList;
-    @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-
+    public ListAdapter(Context context, List<Quake> items){
+        mContext = context;
+        quakeList = items;
     }
 
-    public void setItemDetails(Quake quake){
+    @Override
+    public void onBindViewHolder(QuakeViewHolder holder, int position) {
+        try {
+            setItemDetails(holder, quakeList.get(position));
+        }catch (Exception e){
+
+        }
+    }
+
+    public void setItemDetails(QuakeViewHolder holder, Quake quake){
+        try{
+            Properties properties = quake.getProperties();
+            TextDrawable drawable = TextDrawable.builder()
+                    .beginConfig().fontSize(50).bold().endConfig()
+                    .buildRound(properties.getMag().toString(), Util.getColorCode(properties.getMag()));
+            String title = properties.getPlace();
+            String detail = Util.getDateString(properties.getTime());
+
+            holder.icon.setImageDrawable(drawable);
+            holder.title.setText(title);
+            holder.detail.setText(detail);
+
+        }catch(Exception e){
+
+        }
+
+
 
     }
 
@@ -40,12 +72,17 @@ public class ListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
 
     @Override
     public int getItemCount() {
-        return 0;
+        try{
+            return quakeList.size();
+        }catch(Exception e) {
+            return 0;
+        }
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return null;
+    public QuakeViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false);
+        return new QuakeViewHolder(v);
     }
 
     @Override
@@ -59,9 +96,9 @@ public class ListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
     }
 
     class QuakeViewHolder extends RecyclerView.ViewHolder{
-        final View view;
-        final TextView title, detail;
-        final ImageView icon;
+        public View view;
+        public TextView title, detail;
+        public ImageView icon;
 
         QuakeViewHolder(View itemView){
             super(itemView);
